@@ -12,9 +12,11 @@
 #
 # --- Dependencies ---
 # Core Dependencies
-torch==2.5.1+cu121 --index-url https://download.pytorch.org/whl/cu121
-torchvision==0.20.1+cu121 --index-url https://download.pytorch.org/whl/cu121
-torchaudio==2.5.1+cu121 --index-url https://download.pytorch.org/whl/cu121
+# Core Dependencies
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch==2.5.1+cu121
+torchvision==0.20.1+cu121
+torchaudio==2.5.1+cu121
 numpy
 opencv-python
 pandas
@@ -23,6 +25,7 @@ pillow
 timm==0.9.2
 ultralytics
 facenet-pytorch
+efficientnet_pytorch
 huggingface_hub
 
 # Other installed packages (partial list for reproducibility)
