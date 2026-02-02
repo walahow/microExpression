@@ -156,8 +156,10 @@ class CasmeDataset(Dataset):
             if emotion_name not in EMOTION_MAP:
                 continue
             
-            label = EMOTION_MAP[emotion_name]
             features = np.load(f) # (T, 520)
+            
+            # Keep full 520 features (FaceNet + Emotion)
+            # features = features[:, -8:]
             
             # Process Sequence (Pad/Truncate)
             T = features.shape[0]
@@ -199,10 +201,18 @@ def train_model():
         # Simple random split 80/20
         # In a real scenario, we should split by Subject ID (LOSO)
         import random
+        random.seed(42) # Ensure reproducibility
         random.shuffle(all_files)
         split_idx = int(0.8 * len(all_files))
         train_files = all_files[:split_idx]
         val_files = all_files[split_idx:]
+        
+        # --- Save Splits for Evaluation ---
+        with open("train_split.txt", "w") as f:
+            f.write("\n".join(train_files))
+        with open("val_split.txt", "w") as f:
+            f.write("\n".join(val_files))
+        print(f"Saved splits: {len(train_files)} train, {len(val_files)} val to .txt files")
         
         train_dataset = CasmeDataset(train_files, SEQUENCE_LENGTH)
         val_dataset = CasmeDataset(val_files, SEQUENCE_LENGTH)
