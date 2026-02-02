@@ -21,7 +21,7 @@ NUM_LAYERS = 2
 BATCH_SIZE = 16
 LEARNING_RATE = 0.001
 NUM_EPOCHS = 50
-MODEL_SAVE_PATH = "lstm_micro_expression.pth"
+MODEL_SAVE_PATH = "lstm_emotion_only.pth"
 
 # Map CASME II folders to Labels
 EMOTION_MAP = {
