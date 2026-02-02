@@ -15,7 +15,7 @@ from facenet_pytorch import InceptionResnetV1
 DATA_ROOT = "data/CASME2/CASME2 Preprocessed v2" # Updated path based on extraction structure
 FEATURES_DIR = "data/features_v2"
 SEQUENCE_LENGTH = 30
-INPUT_SIZE = 520  # 512 (FaceNet) + 8 (Emotion Scores)
+INPUT_SIZE = 8  # 8 (Emotion Scores ONLY). Removed 512 FaceNet to prevent identity leakage.
 HIDDEN_SIZE = 64
 NUM_LAYERS = 2
 BATCH_SIZE = 16
@@ -159,7 +159,9 @@ class CasmeDataset(Dataset):
             label = EMOTION_MAP[emotion_name]
             features = np.load(f) # (T, 520)
             
-            # Process Sequence (Pad/Truncate)
+            # --- IMPORTANT: Slice to keep ONLY Emotion Scores (Last 8) ---
+            # Structure was [FaceNet(512), Scores(8)]
+            features = features[:, -8:] # Now shape is (T, 8).shape[0]
             T = features.shape[0]
             if T < self.sequence_length:
                 # Pad with last frame or zeros
