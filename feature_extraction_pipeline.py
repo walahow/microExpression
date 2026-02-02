@@ -174,6 +174,18 @@ def process_face(
     scores = np.zeros(8)
     if fer is not None:
         emotion, scores = fer.predict_emotions(face_rgb, logits=False)
+        
+        # --- Bias Correction: Suppress weak Anger/Contempt ---
+        # "Resting face" often gets misclassified as Anger (idx 0) or Contempt (idx 1).
+        # We enforce a stricter threshold for these specific negative emotions.
+        # Check index of max score
+        pred_idx = np.argmax(scores)
+        if pred_idx == 0: # Anger
+            if scores[0] < 0.60: # Threshold
+                emotion = 'Neutral'
+        elif pred_idx == 1: # Contempt
+            if scores[1] < 0.60:
+                emotion = 'Neutral'
     
     # Logic for Micro-Expression Spotting
     micro_detected = None
@@ -281,8 +293,42 @@ def main():
     
     # Initialize Source
     source = args.source
-    if source.isdigit():
-        source = int(source)
+    
+    # Only verify/ask for mode if the user didn't explicitly provide a different source
+    # (Checking against default "0")
+    if source == "0":
+        print("Select Mode:")
+        print("1. Live Camera Mode")
+        print("2. Video File Mode")
+        try:
+            mode = input("Enter mode (1 or 2) [Default: 1]: ").strip()
+        except EOFError:
+            mode = "1"
+
+        if mode == "2":
+            # Video File Mode
+            print("\n--- Video File Mode ---")
+            video_path = input("Enter path to video file: ").strip()
+            # Remove quotes if user dragged and dropped file
+            video_path = video_path.strip('"').strip("'")
+            
+            if not os.path.exists(video_path):
+                print(f"Error: File not found at {video_path}")
+                return
+            source = video_path
+            print(f"Processing video: {source}")
+        else:
+            # Live Camera Mode (Default)
+            print("\n--- Live Camera Mode ---")
+            source = 0 # Webcam index
+            print("Using Webcam (Index 0)")
+    else:
+        # User provided specific source (e.g. --source video.mp4 or --source 1)
+        if source.isdigit():
+            source = int(source)
+            print(f"Using Camera Index: {source}")
+        else:
+            print(f"Using Video File: {source}")
     
     cap = cv2.VideoCapture(source)
     if not cap.isOpened():
