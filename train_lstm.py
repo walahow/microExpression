@@ -198,13 +198,36 @@ def train_model():
             print("No features found after preprocessing. Check dataset path.")
             return
 
-        # Simple random split 80/20
-        # In a real scenario, we should split by Subject ID (LOSO)
+        # Subject-Independent Random Split (Fair & Balanced)
         import random
-        random.shuffle(all_files)
-        split_idx = int(0.8 * len(all_files))
-        train_files = all_files[:split_idx]
-        val_files = all_files[split_idx:]
+        import re
+        
+        def get_file_id(fpath):
+             fname = os.path.basename(fpath)
+             match = re.search(r'(\d+)', fname)
+             return int(match.group(1)) if match else 0
+
+        # 1. Get all unique subjects
+        all_ids = set(get_file_id(f) for f in all_files)
+        all_ids = list(all_ids)
+        all_ids.sort() # Sort first to ensure deterministic shuffle start
+        
+        # 2. Shuffle Subjects (not files) with fixed seed
+        random.seed(42)
+        random.shuffle(all_ids)
+        
+        # 3. Split Subjects
+        split_idx = int(0.8 * len(all_ids))
+        train_subject_ids = set(all_ids[:split_idx])
+        test_subject_ids = set(all_ids[split_idx:])
+        
+        # 4. Assign Files
+        train_files = [f for f in all_files if get_file_id(f) in train_subject_ids]
+        val_files = [f for f in all_files if get_file_id(f) in test_subject_ids]
+        
+        print(f"Total Subjects: {len(all_ids)}")
+        print(f"Train Subjects: {len(train_subject_ids)} | Test Subjects: {len(test_subject_ids)}")
+        print(f"Train Files: {len(train_files)} | Test Files: {len(val_files)}")
         
         train_dataset = CasmeDataset(train_files, SEQUENCE_LENGTH)
         val_dataset = CasmeDataset(val_files, SEQUENCE_LENGTH)
