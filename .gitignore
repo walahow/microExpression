@@ -9,12 +9,13 @@ env/
 .env
 
 # Large Files / Models
-*.pth
+#*.pth
 *.onnx
 
 # Output
 *.csv
 output/
+/data
 
 # IDE
 .vscode/
