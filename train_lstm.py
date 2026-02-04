@@ -15,13 +15,13 @@ from facenet_pytorch import InceptionResnetV1
 DATA_ROOT = "data/CASME2/CASME2 Preprocessed v2" # Updated path based on extraction structure
 FEATURES_DIR = "data/features_v2"
 SEQUENCE_LENGTH = 30
-INPUT_SIZE = 8  # 8 (Emotion Scores ONLY). Removed 512 FaceNet to prevent identity leakage.
+INPUT_SIZE = 520 # FaceNet (512) + Emotion (8)
 HIDDEN_SIZE = 64
 NUM_LAYERS = 2
 BATCH_SIZE = 16
 LEARNING_RATE = 0.001
 NUM_EPOCHS = 50
-MODEL_SAVE_PATH = "lstm_emotion_only.pth"
+MODEL_SAVE_PATH = "lstm_full_features.pth"
 
 # Map CASME II folders to Labels
 EMOTION_MAP = {
@@ -37,6 +37,10 @@ def extract_features_from_dataset():
     and saves them as .npy files in FEATURES_DIR.
     """
     if not os.path.exists(DATA_ROOT):
+        # Check if we already have features extracted
+        if os.path.exists(FEATURES_DIR) and len(glob.glob(os.path.join(FEATURES_DIR, "*.npy"))) > 0:
+            print(f"Dataset not found at {DATA_ROOT}, but found existing features in {FEATURES_DIR}. Proceeding...")
+            return True
         print(f"Dataset not found at {DATA_ROOT}. Please download CASME II.")
         return False
 
@@ -159,9 +163,10 @@ class CasmeDataset(Dataset):
             label = EMOTION_MAP[emotion_name]
             features = np.load(f) # (T, 520)
             
-            # --- IMPORTANT: Slice to keep ONLY Emotion Scores (Last 8) ---
+            # --- IMPORTANT: Keep FULL Features (520) ---
             # Structure was [FaceNet(512), Scores(8)]
-            features = features[:, -8:] # Now shape is (T, 8).shape[0]
+            # features = features[:, -8:] # OLD: Sliced to 8
+            # features = features # Keep all
             T = features.shape[0]
             if T < self.sequence_length:
                 # Pad with last frame or zeros
@@ -201,31 +206,48 @@ def train_model():
         # Subject-Independent Random Split (Fair & Balanced)
         import random
         import re
+        import json
         
-        def get_file_id(fpath):
+        # Load Subject Map (Recovered from Face Clustering)
+        map_path = "subject_map.json"
+        if os.path.exists(map_path):
+            with open(map_path, 'r') as f:
+                # Keys are strings in JSON, convert to int for lookup
+                raw_map = json.load(f)
+                SUBJECT_MAP = {int(k): v for k, v in raw_map.items()}
+            print(f"Loaded Subject Map with {len(SUBJECT_MAP)} entries.")
+        else:
+            print("WARNING: subject_map.json not found. Falling back to filename ID (Leaky!).")
+            SUBJECT_MAP = {}
+
+        def get_subject_id(fpath):
              fname = os.path.basename(fpath)
              match = re.search(r'(\d+)', fname)
-             return int(match.group(1)) if match else 0
+             if match:
+                 vid_id = int(match.group(1))
+                 # Use map if available, else usage raw video ID
+                 return SUBJECT_MAP.get(vid_id, vid_id) 
+             return 0
 
         # 1. Get all unique subjects
-        all_ids = set(get_file_id(f) for f in all_files)
-        all_ids = list(all_ids)
-        all_ids.sort() # Sort first to ensure deterministic shuffle start
+        all_subjects = set(get_subject_id(f) for f in all_files)
+        all_subjects = list(all_subjects)
+        all_subjects.sort() 
         
-        # 2. Shuffle Subjects (not files) with fixed seed
+        # 2. Shuffle Subjects
         random.seed(42)
-        random.shuffle(all_ids)
+        random.shuffle(all_subjects)
         
         # 3. Split Subjects
-        split_idx = int(0.8 * len(all_ids))
-        train_subject_ids = set(all_ids[:split_idx])
-        test_subject_ids = set(all_ids[split_idx:])
+        split_idx = int(0.8 * len(all_subjects))
+        train_subject_ids = set(all_subjects[:split_idx])
+        test_subject_ids = set(all_subjects[split_idx:])
         
         # 4. Assign Files
-        train_files = [f for f in all_files if get_file_id(f) in train_subject_ids]
-        val_files = [f for f in all_files if get_file_id(f) in test_subject_ids]
+        train_files = [f for f in all_files if get_subject_id(f) in train_subject_ids]
+        val_files = [f for f in all_files if get_subject_id(f) in test_subject_ids]
         
-        print(f"Total Subjects: {len(all_ids)}")
+        print(f"Total Detected Subjects: {len(all_subjects)}")
         print(f"Train Subjects: {len(train_subject_ids)} | Test Subjects: {len(test_subject_ids)}")
         print(f"Train Files: {len(train_files)} | Test Files: {len(val_files)}")
         
@@ -244,7 +266,8 @@ def train_model():
     
     # 3. Loss and Optimizer
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    # Add Weight Decay (L2 Regularization)
+    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
     
     best_acc = 0.0
     
