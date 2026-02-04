@@ -27,15 +27,23 @@ def _safe_exists(self):
 pathlib.Path.exists = _safe_exists
 # -----------------------------------------------------------------------------------
 
+import sys
+# Add parent directory to path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from ultralytics import YOLO
 from facenet_pytorch import InceptionResnetV1
 from emotion_recognizer import HSEmotionRecognizer
 from lstm_model import MicroExpressionLSTM
-from train_lstm import MODEL_SAVE_PATH, INPUT_SIZE
+# We only need INPUT_SIZE from train_lstm. We will resolve model path dynamically.
+from train_lstm import INPUT_SIZE
 
 # --- Configuration ---
+# Get project root
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
 YOLO_WEIGHTS_URL = "https://huggingface.co/Bingsu/yolov8-face/resolve/main/yolov8n-face.pt"
-YOLO_WEIGHTS_PATH = "yolov8n-face.pt"
+YOLO_WEIGHTS_PATH = os.path.join(PROJECT_ROOT, "yolov8n-face.pt")
 CONF_THRESHOLD = 0.5
 FACE_SIZE = 160 # InceptionResnetV1 requires 160x160
 MICRO_EXPRESSION_THRESHOLD = 0.35 # Probability jump to trigger alert (0.0-1.0)
@@ -115,7 +123,8 @@ def load_models(device: torch.device) -> Tuple[YOLO, InceptionResnetV1, Optional
             fer = None
 
         lstm_model = None
-        lstm_weights = MODEL_SAVE_PATH
+        # Look for model in the same folder as this script
+        lstm_weights = os.path.join(os.path.dirname(__file__), "lstm_full_features.pth")
         if os.path.exists(lstm_weights):
             print(f"Loading LSTM model from {lstm_weights}...")
             # Use imported INPUT_SIZE to match the model architecture (520 or 8)

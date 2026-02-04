@@ -17,17 +17,22 @@ import torchvision.models as models
 from torchvision import transforms
 
 # --- Configuration ---
-DATA_ROOT = "../data/CASME2/CASME2 Preprocessed v2" 
-FEATURES_DIR = "../data/features_celeba" # NEW directory for CelebA features
+# Get absolute path to the project root (one level up from this script)
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+DATA_ROOT = os.path.join(PROJECT_ROOT, "data", "CASME2", "CASME2 Preprocessed v2")
+FEATURES_DIR = os.path.join(PROJECT_ROOT, "data", "features_celeba")
+# Sequence & Model Params
 SEQUENCE_LENGTH = 30
-INPUT_SIZE = 512 + 8  # 512 (CelebA ResNet) + 8 (Emotion Scores)
+INPUT_SIZE = 512 + 8 
 HIDDEN_SIZE = 64
 NUM_LAYERS = 2
 BATCH_SIZE = 16
 LEARNING_RATE = 0.001
 NUM_EPOCHS = 50
-MODEL_SAVE_PATH = "lstm_celeba.pth"
-BACKBONE_PATH = "celeba_backbone.pth"
+
+# Checkpoints (Save to same dir as script)
+MODEL_SAVE_PATH = os.path.join(os.path.dirname(__file__), "lstm_celeba.pth")
+BACKBONE_PATH = os.path.join(os.path.dirname(__file__), "celeba_backbone.pth")
 
 # Map CASME II folders to Labels
 EMOTION_MAP = {
@@ -255,7 +260,7 @@ def train_model():
     import json
     
     # Load Subject Map (Recovered from Face Clustering)
-    map_path = "../subject_map.json"
+    map_path = os.path.join(PROJECT_ROOT, "subject_map.json")
     if os.path.exists(map_path):
         with open(map_path, 'r') as f:
             raw_map = json.load(f)

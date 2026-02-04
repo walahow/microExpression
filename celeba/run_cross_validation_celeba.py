@@ -16,7 +16,9 @@ from lstm_model import MicroExpressionLSTM
 from train_lstm_celeba import CasmeDataset, EMOTION_MAP, INPUT_SIZE, HIDDEN_SIZE, NUM_LAYERS, NUM_CLASSES, SEQUENCE_LENGTH
 
 # Override for CelebA
-FEATURES_DIR = "../data/features_celeba"
+# Get absolute path to the project root (should align with train_lstm_celeba logic)
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+FEATURES_DIR = os.path.join(PROJECT_ROOT, "data", "features_celeba")
 
 # Configuration
 K_FOLDS = 5
@@ -43,7 +45,7 @@ def run_cv():
         return
 
     # 2. Load Subject Map
-    map_path = "../subject_map.json"
+    map_path = os.path.join(PROJECT_ROOT, "subject_map.json")
     subject_map = {}
     if os.path.exists(map_path):
         with open(map_path, 'r') as f:

@@ -12,7 +12,11 @@ import sys
 # Add parent directory to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from lstm_model import MicroExpressionLSTM
-from train_lstm import CasmeDataset, EMOTION_MAP, INPUT_SIZE, HIDDEN_SIZE, NUM_LAYERS, NUM_CLASSES, SEQUENCE_LENGTH, FEATURES_DIR
+from train_lstm import CasmeDataset, EMOTION_MAP, INPUT_SIZE, HIDDEN_SIZE, NUM_LAYERS, NUM_CLASSES, SEQUENCE_LENGTH, FEATURES_DIR as ORG_FEATURES_DIR
+
+# Override paths to be absolute
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+FEATURES_DIR = os.path.join(PROJECT_ROOT, "data", "features_v2")
 
 # Configuration
 K_FOLDS = 5
@@ -39,7 +43,7 @@ def run_cv():
         return
 
     # 2. Load Subject Map
-    map_path = "../subject_map.json"
+    map_path = os.path.join(PROJECT_ROOT, "subject_map.json")
     subject_map = {}
     if os.path.exists(map_path):
         with open(map_path, 'r') as f:

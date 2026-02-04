@@ -15,8 +15,11 @@ from emotion_recognizer import HSEmotionRecognizer
 from facenet_pytorch import InceptionResnetV1
 
 # --- Configuration ---
-DATA_ROOT = "../data/CASME2/CASME2 Preprocessed v2" # Adjusted relative path
-FEATURES_DIR = "../data/features_v2" # Adjusted relative path
+# Get project root
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+DATA_ROOT = os.path.join(PROJECT_ROOT, "data", "CASME2", "CASME2 Preprocessed v2")
+FEATURES_DIR = os.path.join(PROJECT_ROOT, "data", "features_v2")
 SEQUENCE_LENGTH = 30
 INPUT_SIZE = 520 # FaceNet (512) + Emotion (8)
 HIDDEN_SIZE = 64
@@ -212,7 +215,7 @@ def train_model():
         import json
         
         # Load Subject Map (Recovered from Face Clustering)
-        map_path = "../subject_map.json"
+        map_path = os.path.join(PROJECT_ROOT, "subject_map.json")
         if os.path.exists(map_path):
             with open(map_path, 'r') as f:
                 # Keys are strings in JSON, convert to int for lookup

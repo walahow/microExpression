@@ -38,8 +38,11 @@ import torchvision.models as models
 from torchvision import transforms
 
 # --- Configuration ---
+# Get project root
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
 YOLO_WEIGHTS_URL = "https://huggingface.co/Bingsu/yolov8-face/resolve/main/yolov8n-face.pt"
-YOLO_WEIGHTS_PATH = "../yolov8n-face.pt"
+YOLO_WEIGHTS_PATH = os.path.join(PROJECT_ROOT, "yolov8n-face.pt")
 CONF_THRESHOLD = 0.5
 FACE_SIZE = 224 # ResNet18 uses 224x224
 MICRO_EXPRESSION_THRESHOLD = 0.35
@@ -48,8 +51,8 @@ EMOTION_MAP = {
     'fear': 4, 'sadness': 5, 'others': 6
 }
 INPUT_SIZE = 512 + 8
-MODEL_SAVE_PATH = "lstm_celeba.pth"
-BACKBONE_PATH = "celeba_backbone.pth"
+MODEL_SAVE_PATH = os.path.join(os.path.dirname(__file__), "lstm_celeba.pth")
+BACKBONE_PATH = os.path.join(os.path.dirname(__file__), "celeba_backbone.pth")
 
 class ProbabilitySmoother:
     def __init__(self, alpha=0.3):
