@@ -15,16 +15,14 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 DATA_ROOT = os.path.join(PROJECT_ROOT, "data", "FFHQ")
 MODEL_SAVE_PATH = os.path.join(os.path.dirname(__file__), "weights_ffhq_pretrained.pth")
 
-# --- Hardware Config (Optimized for GTX 1650 / 8GB RAM) ---
-BATCH_SIZE = 24 # Adjusted to 24 for ~3.2GB VRAM usage (Safe zone)
+# --- Hardware Config (Optimized for RTX 3060 / 6GB VRAM) ---
+BATCH_SIZE = 48 # Increased to 48 for RTX 3060
 LEARNING_RATE = 0.001
 NUM_EPOCHS = 10
 IMAGE_SIZE = 224
 latent_dim = 512
-NUM_WORKERS = 4 # Increased for 16GB RAM
-NUM_WORKERS = 4 # Increased for 16GB RAM
-NUM_WORKERS = 4 # Increased for 16GB RAM
-SUBSET_SIZE = 13000 # ~25% of 52k images (Solid compromise for feature quality)
+NUM_WORKERS = 4 
+SUBSET_SIZE = 26000 # 50% of the dataset
 
 def get_device():
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
