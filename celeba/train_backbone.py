@@ -20,7 +20,7 @@ FFHQ_WEIGHTS_PATH = os.path.join(os.path.dirname(__file__), "weights_ffhq_pretra
 SAVE_PATH = os.path.join(os.path.dirname(__file__), "celeba_backbone.pth")
 
 # Hyperparameters
-BATCH_SIZE = 128 # Increased for RTX 3060 (6GB VRAM)
+BATCH_SIZE = 48 # Increased for RTX 3060 (6GB VRAM)
 LEARNING_RATE = 1e-4 # Lower LR for fine-tuning
 NUM_EPOCHS = 15
 IMAGE_SIZE = 224
