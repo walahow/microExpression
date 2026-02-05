@@ -15,8 +15,7 @@ from lstm_model import MicroExpressionLSTM
 from emotion_recognizer import HSEmotionRecognizer
 import torchvision.models as models
 from torchvision import transforms
-
-# --- Configuration ---
+# --- Configuration --
 # Get absolute path to the project root (one level up from this script)
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 DATA_ROOT = os.path.join(PROJECT_ROOT, "data", "CASME2", "CASME2 Preprocessed v2")
