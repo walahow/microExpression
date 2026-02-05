@@ -15,7 +15,11 @@ env/
 # Output
 *.csv
 output/
-/data
+/data/*
+!/data/celeba/
+/data/celeba/img_align_celeba/
+/data/celeba/features_*/
+/data/FFHQ/
 
 # IDE
 .vscode/
