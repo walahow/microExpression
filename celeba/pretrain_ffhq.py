@@ -22,7 +22,7 @@ NUM_EPOCHS = 10
 IMAGE_SIZE = 224
 latent_dim = 512
 NUM_WORKERS = 4 
-SUBSET_SIZE = 26000 # 50% of the dataset
+SUBSET_SIZE = 52000 # 100% of the dataset
 
 def get_device():
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
