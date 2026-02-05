@@ -23,7 +23,8 @@ IMAGE_SIZE = 224
 latent_dim = 512
 NUM_WORKERS = 4 # Increased for 16GB RAM
 NUM_WORKERS = 4 # Increased for 16GB RAM
-SUBSET_SIZE = 5000 # ~10% of 52k images (Good balance for GTX 1650)
+NUM_WORKERS = 4 # Increased for 16GB RAM
+SUBSET_SIZE = 13000 # ~25% of 52k images (Solid compromise for feature quality)
 
 def get_device():
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
