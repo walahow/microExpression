@@ -17,10 +17,10 @@ ATTR_FILE = os.path.join(DATA_ROOT, "list_attr_celeba.csv")
 
 # Weights from Stage 1 (FFHQ)
 FFHQ_WEIGHTS_PATH = os.path.join(os.path.dirname(__file__), "weights_ffhq_pretrained.pth")
-SAVE_PATH = os.path.join(os.path.dirname(__file__), "weights_celeba_finetuned.pth")
+SAVE_PATH = os.path.join(os.path.dirname(__file__), "celeba_backbone.pth")
 
 # Hyperparameters
-BATCH_SIZE = 32
+BATCH_SIZE = 128 # Increased for RTX 3060 (6GB VRAM)
 LEARNING_RATE = 1e-4 # Lower LR for fine-tuning
 NUM_EPOCHS = 15
 IMAGE_SIZE = 224
@@ -142,7 +142,7 @@ def train():
     
     # Split? CelebA has specific partitions but for now simple random split or full train is okay
     # For this backbone trainer, we usually use the train partition, but using all is fine for feature power
-    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
+    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, pin_memory=True)
     
     # 2. Model
     model = CelebAClassifier(num_classes=40, pretrained_path=FFHQ_WEIGHTS_PATH).to(device)
